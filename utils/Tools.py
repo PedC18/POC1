@@ -2,14 +2,18 @@
 
 def ResumePointsStats(data, columns):
     total = len(data)
+    result = []
     for column in columns:
         aux = data[data[column] == True]
 
         true = len(aux)
 
         Percentage = true/total
+        Percentage = round(Percentage,2)
 
-        print(f'{column} percentage : {Percentage}')
+        result.append(Percentage)
+    
+    return result
 
 # Make a function that calculates the way the point was won
 
