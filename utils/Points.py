@@ -1,9 +1,8 @@
 import pandas as pd
    
 
-# Pega todos os pontos dos jogos onde o jogador participou, 
-# e retorna apenas os pontos do próprio jogador
-
+# Pega todos os pontos dos jogos onde o jogador participou
+# e divide em Won e Lost 
 def PlayerPoints(player_name, points_data, player_game_id):
 
     WonPoints = pd.DataFrame()
@@ -27,7 +26,8 @@ def PlayerPoints(player_name, points_data, player_game_id):
 
 
     
-
+# Pega todos os pontos dos jogos onde o jogador participou, 
+# e retorna, divididos, os saques e as recepções
 
 def PlayerServes(player_name, points_data, player_game_id):
     
