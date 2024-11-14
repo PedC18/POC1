@@ -2,72 +2,161 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-def ResumePointsStats(data, columns):
-    total = len(data)
-    result = []
-    for column in columns:
-        aux = data[data[column] == True]
+def Victor(points, matches):
+    Winners = []
 
-        true = len(aux)
+    for id in matches['match_id']:
+        m_points = points[points['match_id'] == id]
+        Victor = m_points.iloc[len(m_points) - 1]['PtWinner']
+        if(Victor == 1):
+            Winners.append(matches[matches['match_id'] == id]['Player 1'].unique())
+        else:
+            Winners.append(matches[matches['match_id'] == id]['Player 2'].unique())
 
-        Percentage = true/total
-        Percentage = round(Percentage,2)
+    matches['Winner'] = Winners
 
-        result.append(Percentage)
+def ServStats(Serves,player_name,player_games):
+    serves = pd.DataFrame(columns=['match_id'])
+    serves['match_id'] = player_games['match_id']
+
+    ServesTotal = Serves[(Serves['row'] == 'Total') & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesFirst = Serves[(Serves['row'] == '1') & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesSecond = Serves[(Serves['row'] == '2') & (Serves['player'] == player_name)].reset_index(drop=True)
+
+    serves['Total'] = ServesTotal['pts']
+    serves[['1st','Won1']] = ServesFirst[['pts','pts_won']]
+    serves[['2nd','Won2 ']] = ServesSecond[['pts','pts_won']]
+
+
+    return serves
+
+def PtWinner(points,player,games):
+    result = pd.DataFrame()
+    for id in games['match_id']:
+        game = games[games['match_id'] == id]
+        gamePts = points[points['match_id'] == id]
+        Player1 = game['Player 1'].unique()
+
+        if(Player1 == player):
+            gamePts['PtWinner'] = gamePts['PtWinner'] == 1
+        else:
+            gamePts['PtWinner'] = gamePts['PtWinner'] == 2
+        
+        result = pd.concat([result,gamePts],axis=0)
+
+    
+    return result['PtWinner']
+
+def Server(points,player,games):
+    result = pd.DataFrame()
+    for id in games['match_id']:
+        game = games[games['match_id'] == id]
+        gamePts = points[points['match_id'] == id]
+        Player1 = game['Player 1'].unique()
+
+        if(Player1 == player):
+            gamePts['Svr'] = gamePts['Svr'] == 1
+        else:
+            gamePts['Svr'] = gamePts['Svr'] == 2
+        
+        result = pd.concat([result,gamePts],axis=0)
+
+    
+    return result['Svr']
+
+def Shots(data,rows):
+    result = pd.DataFrame(columns=rows)
+    result['match_id'] = data['match_id'].unique()
+    i = 0
+    for id in data['match_id'].unique():
+        game = data[data['match_id'] == id]
+        for idx,row in game.iterrows():
+            result.loc[i,row['row']] = row['shots']
+        
+        i += 1
+        
+
     
     return result
+
+def PtEnding(points,dict):
+    
+    for idx,row in points.iterrows():
+        if row['2nd'] == None:
+            rally = row['1st']
+        else:
+            rally = row['2nd']
+        
+        symbol = rally[len(rally) - 1]
+        
+        if symbol == "*":
+            if(len(rally) == 2):
+                points.loc[(idx),[dict["*"][1]]] = True
+            else:
+                points.loc[(idx),[dict["*"][0]]] = True
+
+        elif symbol == "@":
+            points.loc[(idx),[dict['@']]] = True
+
+        elif symbol == '#':
+            points.loc[(idx),[dict['#']]] = True
+        
+        else:
+            points.loc[(idx),['Double Fault']] = True
+
+def Rallys(data,rows):
+    result = pd.DataFrame(columns=rows)
+    result['match_id'] = data['match_id'].unique()
+    i = 0
+    for id in data['match_id'].unique():
+        game = data[data['match_id'] == id]
+        for idx,row in game.iterrows():
+            result.loc[i,row['row']] = row['pts']
+        
+        i += 1
+        
+
+    
+    return result
+            
+        
+# def ResumePointsStats(data, columns):
+#     total = len(data)
+#     result = []
+#     for column in columns:
+#         aux = data[data[column] == True]
+
+#         true = len(aux)
+
+#         Percentage = true/total
+#         Percentage = round(Percentage,2)
+
+#         result.append(Percentage)
+    
+#     return result
 
 # Make a function that calculates the way the point was won
 
 # Make a function that specifically calculates serve stats
 
-def ResumeServeStats(data):
-    FirstIn = data[data['1stIn'] == True]
-    FirstOut = data[data['1stIn'] == False]
+# def ResumeServeStats(data):
+#     FirstIn = data[data['1stIn'] == True]
+#     FirstOut = data[data['1stIn'] == False]
 
     
-    SecondIn = FirstOut[FirstOut['2ndIn'] == True]
+#     SecondIn = FirstOut[FirstOut['2ndIn'] == True]
 
    
-    FirstIn_Percent = len(FirstIn)/len(data)
-    SecondIn_Percent = len(SecondIn)/len(FirstOut)
+#     FirstIn_Percent = len(FirstIn)/len(data)
+#     SecondIn_Percent = len(SecondIn)/len(FirstOut)
 
 
-    print(f'1stIn percentage : {FirstIn_Percent}')
-    print(f'2ndIn percentage : {SecondIn_Percent}')
+#     print(f'1stIn percentage : {FirstIn_Percent}')
+#     print(f'2ndIn percentage : {SecondIn_Percent}')
 
+# def Surface(data):
+#     print(f"Grass :  {len(data[data['Surface'] == 'Grass'])}")
+#     print(f"Hard :  {len(data[data['Surface'] == 'Hard'])}")
+#     print(f"Clay :  {len(data[data['Surface'] == 'Clay'])}")
 
-def PlotGraph(data,surface, columns, won):
-
-    Federer_Clay_Points = data[0][data[0]['Surface'] == surface]
-    Djokovic_Clay_Points = data[1][data[1]['Surface'] == surface]
-    Nadal_Clay_Points = data[2][data[2]['Surface'] == surface]
-
-    FedererStats = ResumePointsStats(Federer_Clay_Points,columns)
-    DjokovicStats = ResumePointsStats(Djokovic_Clay_Points,columns)
-    NadalStats = ResumePointsStats(Nadal_Clay_Points,columns)
-
-    PtCodes = ['Ace', 'Unreturned', 'Winners','Forced Error', 'Unforced Error', 'Double Fault']
-
-    barWidth = 0.25
-    br1 = np.arange(len(FedererStats)) 
-    br2 = [x + barWidth for x in br1] 
-    br3 = [x + barWidth for x in br2]
-    
-    plt.subplots(figsize =(8, 4))
-    plt.bar(br1, FedererStats, color= 'blue', alpha = 0.7,
-            width = barWidth)
-    plt.bar(br2, DjokovicStats, color= 'green', alpha = 0.7,
-            width = barWidth)
-    plt.bar(br3, NadalStats, color= 'red', alpha = 0.7,
-            width = barWidth)
-    
-    plt.xticks([r + barWidth for r in range(len(FedererStats))], 
-            PtCodes)
-    
-    plt.ylabel("Percentages")
-    plt.title(f"Result of Points {won} in {surface} by the Big 3")
-    plt.legend(['Federer','Djokovic','Nadal'])
-
-    plt.show()
 

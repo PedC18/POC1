@@ -1,0 +1,13 @@
+Datasets
+- Won Points (x)
+- Lost Points (x)
+- Serve Statistics (x)
+- Shot Selection ()
+- Rally Lenght ()
+- Create a dataset with these combined informations ()
+
+Analysis
+
+- Serve influence: Difference in points won when Serving 1st or 2nd ()
+- Serve x Receive: Won Points when serving x Receiving ()
+- Size of Game: Number of points in a losing Game versus Won () 
