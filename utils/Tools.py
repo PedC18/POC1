@@ -20,8 +20,8 @@ def ServStats(Serves,player_name,player_games):
     serves['match_id'] = player_games['match_id']
 
     ServesTotal = Serves[(Serves['row'] == 'Total') & (Serves['player'] == player_name)].reset_index(drop=True)
-    ServesFirst = Serves[(Serves['row'] == '1') & (Serves['player'] == player_name)].reset_index(drop=True)
-    ServesSecond = Serves[(Serves['row'] == '2') & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesFirst = Serves[(Serves['row'] == 1) & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesSecond = Serves[(Serves['row'] == 2) & (Serves['player'] == player_name)].reset_index(drop=True)
 
     serves['Total'] = ServesTotal['pts']
     serves[['1st','Won1']] = ServesFirst[['pts','pts_won']]
