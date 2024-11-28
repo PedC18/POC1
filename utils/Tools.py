@@ -1,11 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import csv
 
 def Victor(points, matches):
     Winners = []
 
     for id in matches['match_id']:
+        # print(id)
         m_points = points[points['match_id'] == id]
         Victor = m_points.iloc[len(m_points) - 1]['PtWinner']
         if(Victor == 1):
@@ -20,8 +23,8 @@ def ServStats(Serves,player_name,player_games):
     serves['match_id'] = player_games['match_id']
 
     ServesTotal = Serves[(Serves['row'] == 'Total') & (Serves['player'] == player_name)].reset_index(drop=True)
-    ServesFirst = Serves[(Serves['row'] == 1) & (Serves['player'] == player_name)].reset_index(drop=True)
-    ServesSecond = Serves[(Serves['row'] == 2) & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesFirst = Serves[(Serves['row'] == '1') & (Serves['player'] == player_name)].reset_index(drop=True)
+    ServesSecond = Serves[(Serves['row'] == '2') & (Serves['player'] == player_name)].reset_index(drop=True)
 
     serves['Total'] = ServesTotal['pts']
     serves[['1st','Won1']] = ServesFirst[['pts','pts_won']]
@@ -118,7 +121,22 @@ def Rallys(data,rows):
 
     
     return result
-            
+
+def GetMatches(Matches,years):     
+    Num_years = years[1] - years[0]
+    Division = Num_years/3
+    middle_l = str(years[0] + Division)
+    middle_h = str(years[1] - Division
+)
+    matches_start = Matches[(Matches['Date'].astype(str).str[:4] >= str(years[0])) & (Matches['Date'].astype(str).str[:4] < middle_l)]
+    matches_middle = Matches[(Matches['Date'].astype(str).str[:4] >= middle_l) & (Matches['Date'].astype(str).str[:4] < middle_h)]
+    matches_end = Matches[(Matches['Date'].astype(str).str[:4] >= middle_h) & (Matches['Date'].astype(str).str[:4] <= str(years[1]))]
+
+    return matches_start, matches_middle, matches_end
+
+    
+    
+
         
 # def ResumePointsStats(data, columns):
 #     total = len(data)

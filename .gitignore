@@ -43,6 +43,7 @@ Temporary Items
 .apdisk
 
 #Extensions
-*.csv
+BaseData/*.csv
+*_data/*.csv
 *.xlsm
 *.pyc
