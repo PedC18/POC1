@@ -134,7 +134,46 @@ def GetMatches(Matches,years):
 
     return matches_start, matches_middle, matches_end
 
+def GetSetsResults(Points):
+    NewPoints = pd.DataFrame(columns=Points.columns)
     
+    for id in Points['match_id'].unique():
+        Match = Points[Points['match_id'] == id]
+        size = int(max(Match['Set#']))
+        for i in Match['Set#'].unique():
+            Set = Match[Match['Set#'] == i]
+            if Set.iloc[-1]['Victor'] == False:
+                Set['SetWinner'] = False
+            else:
+                Set['SetWinner'] = True
+
+            NewPoints = pd.concat([NewPoints,Set],axis=0)
+    
+    return NewPoints
+
+def GetGamesResults(Points):
+    NewPoints = pd.DataFrame(columns=Points.columns)
+    
+    for id in Points['match_id'].unique():
+        Match = Points[Points['match_id'] == id]
+        size = int(max(Match['Gm#']))
+        for i in Match['Gm#'].unique():
+            Game = Match[Match['Gm#'] == i]
+            if Game.iloc[-1]['Victor'] == False:
+                Game['GameWinner'] = False
+            else:
+                Game['GameWinner'] = True
+
+            NewPoints = pd.concat([NewPoints,Game],axis=0)
+    
+    return NewPoints
+
+def Translate(s):
+    chars_to_remove = "789+-^;=c!CRS "  # Specify characters to remove
+    translation_table = str.maketrans('', '', chars_to_remove)
+    updated_text = s.translate(translation_table)
+
+    return updated_text
     
 
         

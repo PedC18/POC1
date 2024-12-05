@@ -1,58 +1,84 @@
 import pandas as pd
+from utils.Tools import Translate
    
+def DivisionSets(Points,ids):
+    SetPerMatches = {}
+    for id in ids:
+        Match = Points[Points['match_id'] == id]
+        Sets_Matrix = []
+        size = int(max(Match['Set#']))
 
-# Pega todos os pontos dos jogos onde o jogador participou
-# e divide em Won e Lost 
-def PlayerPoints(player_name, points_data, player_matches):
+        for i in Match['Set#'].unique():
+            Set = Match[Match['Set#'] == i]
 
-    WonPoints = pd.DataFrame()
-    LostPoints = pd.DataFrame()
-
-    player_game_id = player_matches['match_id']
-    
-    for id in player_game_id:
-        game = points_data[points_data['match_id'] == id]
-        player_info = player_matches[player_matches['match_id'] == id]
-        Player1 = player_info['Player 1'].unique()
-
-        if(Player1 == player_name):
-            PointsWon = game[game['PtWinner'] == 1]
-            PointsLost = game[game['PtWinner'] == 2]
-        else:
-            PointsWon = game[game['PtWinner'] == 2]
-            PointsLost = game[game['PtWinner'] == 1]
+            Rallys = []
+            for _,row in Set.iterrows():
+            
+                if(row['2nd'] == 'False'):
+                    Rallys.append(row['1st'])
+                else:
+                    Rallys.append(row['2nd']) 
+                    
+            Sets_Matrix.append(Rallys)
         
-        WonPoints = pd.concat([WonPoints,PointsWon])
-        LostPoints = pd.concat([LostPoints,PointsLost])
+        SetPerMatches[id] = Sets_Matrix
     
-    return WonPoints.reset_index(drop=True), LostPoints.reset_index(drop=True)
+    return SetPerMatches
 
-
-    
-# Pega todos os pontos dos jogos onde o jogador participou, 
-# e retorna, divididos, os saques e as recepções
-
-def PlayerServes(player_name, points_data, player_matches):
-    
-    Serves = pd.DataFrame()
-    Receives = pd.DataFrame()
-
-    player_game_id = player_matches['match_id']
-
-    for id in player_game_id:
-        game = points_data[points_data['match_id'] == id]
-        player_info = player_matches[player_matches['match_id'] == id]
-        Player1 = player_info['Player 1'].unique()
-
-        if (Player1 == player_name):
-            Serving = game[game['Svr'] == 1]
-            Receiving = game[game['Svr'] == 2]
-        else:
-            Serving = game[game['Svr'] == 2]
-            Receiving = game[game['Svr'] == 1]
+def DivisionGames(Points,ids):
+    GamesPerMatches = {}
+    for id in ids:
+        Match = Points[Points['match_id'] == id]
         
-        Serves = pd.concat([Serves,Serving])
-        Receives = pd.concat([Receives,Receiving])
+        Games_Matrix = []
+        size = int(max(Match['Gm#']))
+        
+        for i in Match['Gm#'].unique():
+            Game = Match[Match['Gm#'] == i]
+
+            Rallys = []
+            for _,row in Game.iterrows():
+            
+                if(row['2nd'] == 'False'):
+                    Rallys.append(row['1st'])
+                else:
+                    Rallys.append(row['2nd'])
+
+            Games_Matrix.append(Rallys)
+        
+        GamesPerMatches[id] = Games_Matrix
     
-    return Serves.reset_index(drop=True), Receives.reset_index(drop=True)
+    return GamesPerMatches
+
+def RallyParsing(s,dic):
+    Sequence = []
+    text = Translate(s=s)
+    serve = text[0]
+    rally = text[1:len(text)-1]
+    end = text[-1]
+    
+    
+    if(len(text) == 2):
+        Sequence.append(dic[serve])
+        
+        if(end == '*'):
+            Sequence.append('Ace')
+        else:
+            Sequence.append(dic[end])
+
+        return Sequence
+
+    Sequence.append(dic[serve])
+
+    if rally != '':
+        rallyShots = rally[::2]
+        rallyDir = rally[1::2]
+        for i in range(len(rallyShots)):
+            if(i == len(rallyDir)):
+                Sequence.append(dic[rallyShots[i]])
+            else:
+                Sequence.append(dic[rallyShots[i]] + dic[rallyDir[i]])
+
+    Sequence.append(dic[end])
+    return Sequence
 

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import csv
-from utils.Tools import Victor,ServStats,PtWinner,Server,Shots, PtEnding, Rallys, GetMatches
+from utils.Tools import Victor,ServStats,PtWinner,Server,Shots, PtEnding, Rallys, GetMatches, GetSetsResults, GetGamesResults
 
 
 def BuildDirectory(directory_name):
@@ -38,6 +38,9 @@ def BuildPoints(PlayerGames,Points,Player,player_name,directory_name,period):
 
     PointsPlayer['Server'] = Server(PointsPlayer,Player, PlayerGames)
 
+    PointsPlayer = GetGamesResults(PointsPlayer)
+    PointsPlayer = GetSetsResults(PointsPlayer)
+    
     PointsPlayer[['Ace','Winner','Unforced Error','Forced Error','Double Fault']] = None
 
     PointsPlayer.loc[(PointsPlayer['2nd'].isna()), ['2nd']] = None
@@ -45,6 +48,7 @@ def BuildPoints(PlayerGames,Points,Player,player_name,directory_name,period):
     PtEnding(PointsPlayer,EndDict)
 
     PointsPlayer = PointsPlayer.fillna(False)
+
 
     PointsPlayer.to_csv(directory_name+'/Points'+ player_name + period +'.csv',index=False)
 
