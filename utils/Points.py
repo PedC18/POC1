@@ -57,7 +57,6 @@ def RallyParsing(s,dic):
     rally = text[1:len(text)-1]
     end = text[-1]
     
-    
     if(len(text) == 2):
         Sequence.append(dic[serve])
         

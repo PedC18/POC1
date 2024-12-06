@@ -30,9 +30,8 @@ def BuildPoints(PlayerGames,Points,Player,player_name,directory_name,period):
 
     PointsPlayer = pd.merge(Points,PlayerAux, on='match_id')
 
-    Victor(PointsPlayer,PlayerGames)
-
-    PlayerGames['Winner'] = PlayerGames['Winner'].apply(lambda x: True if x == "["+Player+"]" else False)
+    Victor(Points,PlayerGames)
+    PlayerGames['Winner'] = PlayerGames['Winner'].apply(lambda x: True if x == Player else False)
 
     PointsPlayer['Victor'] = PtWinner(PointsPlayer,Player, PlayerGames)
 
@@ -51,6 +50,8 @@ def BuildPoints(PlayerGames,Points,Player,player_name,directory_name,period):
 
 
     PointsPlayer.to_csv(directory_name+'/Points'+ player_name + period +'.csv',index=False)
+
+    PlayerGames.to_csv(directory_name+'/'+ player_name + period +'.csv',index=False)
 
 
 # --------------------------------------------------------------------------------------------------------------------------------- #
@@ -155,9 +156,9 @@ def Builder(Player,years):
     PlayerGamesMiddle = Middle[(Middle['Player 1'] == Player) | (Middle['Player 2'] == Player)].reset_index(drop=True)
     PlayerGamesEnd = End[(End['Player 1'] == Player) | (End['Player 2'] == Player)].reset_index(drop=True)
 
-    PlayerGamesStart.to_csv(directory_name+'/'+ player_name + 'Start.csv',index=False)
-    PlayerGamesMiddle.to_csv(directory_name+'/'+ player_name + 'Middle.csv',index=False)
-    PlayerGamesEnd.to_csv(directory_name+'/'+ player_name + 'End.csv',index=False)
+    # PlayerGamesStart.to_csv(directory_name+'/'+ player_name + 'Start.csv',index=False)
+    # PlayerGamesMiddle.to_csv(directory_name+'/'+ player_name + 'Middle.csv',index=False)
+    # PlayerGamesEnd.to_csv(directory_name+'/'+ player_name + 'End.csv',index=False)
 
     Points = pd.read_csv('ProjData/Points.csv')
 
