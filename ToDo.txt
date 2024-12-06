@@ -1,13 +1,9 @@
-Datasets
-- Won Points (x)
-- Lost Points (x)
-- Serve Statistics (x)
-- Shot Selection ()
-- Rally Lenght ()
-- Create a dataset with these combined informations ()
+Mudar o parsing dos Rallys: olhar apenas os rallys separados dos desfechos () 
+Estátisticas de Saque e recepção : Tipo, Direção. ()
+Estatisticas em quadras especificas; ()
+Estatisticas em Key Points ()
+Estatisticas relacionadas ao desfecho dos pontos: o que leva a determinados desfechos, golpes (Winners e Forced)
 
-Analysis
 
-- Serve influence: Difference in points won when Serving 1st or 2nd ()
-- Serve x Receive: Won Points when serving x Receiving ()
-- Size of Game: Number of points in a losing Game versus Won () 
+Exemplo de minseq -> Pegar todos os dados com o desfecho "Winner" e Minerar as sequências. Fazer isso para todos os desfechos
+

@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 import os
 import csv
 
@@ -174,6 +175,18 @@ def Translate(s):
     updated_text = s.translate(translation_table)
 
     return updated_text
+
+def check_list_contained(A, B):
+  # convert list A to string
+    A_str = ' '.join(map(str, A))
+    # convert list B to string
+    B_str = ' '.join(map(str, B))
+    # find all instances of A within B
+    instances = re.findall(A_str, B_str)
+ 
+    # return True if any instances were found, False otherwise
+    return len(instances) > 0
+
     
 
         

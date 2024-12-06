@@ -52,20 +52,11 @@ def DivisionGames(Points,ids):
 
 def RallyParsing(s,dic):
     Sequence = []
+    End = []
     text = Translate(s=s)
     serve = text[0]
     rally = text[1:len(text)-1]
     end = text[-1]
-    
-    if(len(text) == 2):
-        Sequence.append(dic[serve])
-        
-        if(end == '*'):
-            Sequence.append('Ace')
-        else:
-            Sequence.append(dic[end])
-
-        return Sequence
 
     Sequence.append(dic[serve])
 
@@ -74,10 +65,22 @@ def RallyParsing(s,dic):
         rallyDir = rally[1::2]
         for i in range(len(rallyShots)):
             if(i == len(rallyDir)):
-                Sequence.append(dic[rallyShots[i]])
+                End.append(dic[rallyShots[i]])
             else:
                 Sequence.append(dic[rallyShots[i]] + dic[rallyDir[i]])
 
-    Sequence.append(dic[end])
-    return Sequence
+    End.append(dic[end])
+    return Sequence, End
+
+def RallyExtraction(Points):
+    Rallys = []
+    for _,row in Points.iterrows():
+            
+        if(row['2nd'] == 'False'):
+            Rallys.append(row['1st'])
+        else:
+            Rallys.append(row['2nd'])
+    
+    return Rallys
+
 
