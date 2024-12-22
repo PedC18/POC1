@@ -7,3 +7,9 @@ Estatisticas relacionadas ao desfecho dos pontos: o que leva a determinados desf
 
 Exemplo de minseq -> Pegar todos os dados com o desfecho "Winner" e Minerar as sequências. Fazer isso para todos os desfechos
 
+
+
+
+Que tipo de saque é mais frequente. Como o Jogador geralmente retorna serviços.
+
+On rallys: If we divide by duration, what can we infer?

@@ -1,6 +1,7 @@
 from prefixspan import PrefixSpan
 from utils.Points import RallyExtraction,RallyParsing
 from pymining import itemmining, seqmining
+from collections import Counter
 import re
 
 StrokesDictionary = {
@@ -96,3 +97,64 @@ def Seqmining(Sequences, k ):
     sorted_values = sorted(filtered_seq, key=lambda x : x[1],reverse=True)
 
     return sorted_values[:10]
+
+def find_contiguous_patterns(sequences, min_support, k=5, max_length=None):
+    """
+    Find contiguous patterns in sequences.
+    
+    Args:
+        sequences (list of list): List of sequences.
+        min_support (int): Minimum support for patterns.
+        k (int): Minimum length of patterns.
+        max_length (int): Maximum length of patterns (optional).
+    
+    Returns:
+        list of tuple: Frequent contiguous patterns with their counts.
+    """
+    if max_length is None:
+        max_length = float('inf')  # No maximum length constraint
+    
+    # Counter to store pattern frequencies
+    pattern_counts = Counter()
+
+    # Generate all contiguous subsequences
+    for sequence in sequences:
+        seq_len = len(sequence)
+        for start in range(seq_len):
+            for length in range(k, min(max_length, seq_len - start) + 1):
+                subsequence = tuple(sequence[start:start + length])
+                pattern_counts[subsequence] += 1
+
+    # Filter patterns by minimum support
+    frequent_patterns = [(count, pattern) for pattern, count in pattern_counts.items() if count >= min_support]
+    
+    return frequent_patterns
+
+# def SortByOcurrence(Sequences, Patterns):
+#     idx = []
+#     for S in Patterns:
+#         count = 0
+#         result = [check_list_contained(S[1],s) for s in Sequences]
+#         for i in range(len(result)):
+#             if result[i] == True:
+#                 # print(Endings[i])
+#                 count+=1
+        
+#         idx.append(count)
+#         S += (count)
+    
+#     sorted_values = [x for _, x in sorted(zip(idx, Patterns),reverse=True)]
+
+#     return sorted_values
+
+
+def PatternsByStat(Stat, Points, min_support, k):
+    Stats = Points[Points[Stat] == True]
+
+    Sequences, _ = Sequencer(Stats)
+    Stats_Patterns = find_contiguous_patterns(Sequences,min_support,k)
+    SortedPatterns = SortPatterns(Stats_Patterns)
+
+    return SortedPatterns
+
+
