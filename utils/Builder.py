@@ -37,6 +37,8 @@ def BuildPoints(PlayerGames,Points,Player,player_name,directory_name,period):
 
     PointsPlayer['Server'] = Server(PointsPlayer,Player, PlayerGames)
 
+    PointsPlayer['Gm#'] = PointsPlayer['Gm#'].interpolate('nearest')
+
     PointsPlayer = GetGamesResults(PointsPlayer)
     PointsPlayer = GetSetsResults(PointsPlayer)
     
