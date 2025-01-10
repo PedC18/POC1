@@ -58,6 +58,19 @@ def Sequencer(Points):
     
     return Sequences, Endings
 
+def SequencerServe(Points):
+    Rally = RallyExtraction(Points)
+
+    data = [RallyParsing(d,StrokesDictionary) for d in Rally]
+
+    Sequences = []
+    Endings = []
+    for seq, end in data:
+        Sequences.append(seq[-4:])
+        Endings.append(end)
+    
+    return Sequences, Endings
+
 # Initialize the PrefixSpan algorithm
 def CallPrefixSpan(Sequences, min_support, k = 0):
     ps = PrefixSpan(Sequences)
@@ -146,6 +159,42 @@ def find_contiguous_patterns(sequences, min_support, k=5, max_length=None):
 #     sorted_values = [x for _, x in sorted(zip(idx, Patterns),reverse=True)]
 
 #     return sorted_values
+
+def FindSeq(data,k,Stat,serve=None,result=None):
+
+    Stats = data[data[Stat] == True]
+
+    if serve != None:
+        Stats = Stats[Stats['Server'] == serve]
+
+    if result != None:
+        Stats = Stats[Stats['Victor'] == result]
+
+    min_support = int(len(Stats)/200)
+
+    Sequences, _ = Sequencer(Stats)
+    Stats_Patterns = find_contiguous_patterns(Sequences,min_support,k)
+    SortedPatterns = SortPatterns(Stats_Patterns)
+
+    return SortedPatterns
+
+def FindSeqFinal(data,k,Stat,serve=None,result=None):
+
+    Stats = data[data[Stat] == True]
+
+    if serve != None:
+        Stats = Stats[Stats['Server'] == serve]
+
+    if result != None:
+        Stats = Stats[Stats['Victor'] == result]
+
+    min_support = int(len(Stats)/200)
+
+    Sequences, _ = SequencerServe(Stats)
+    Stats_Patterns = find_contiguous_patterns(Sequences,min_support,k)
+    SortedPatterns = SortPatterns(Stats_Patterns)
+
+    return SortedPatterns
 
 
 def PatternsByStat(Stat, Points, min_support, k):

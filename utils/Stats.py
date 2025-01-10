@@ -54,16 +54,16 @@ def KeyPointsData(data):
 
     return GamePoints,BreakPoints,DeucePoints
 
-def BuildRally(data,PlayerGames):
+def BuildRally(data,PlayerGames,Player):
     rows = ['Total','1-3','4-6','7-9','10']
 
-    PlayerRallyServe = data[data['server'] == 'Roger Federer'].drop(columns=['server','returner'])
+    PlayerRallyServe = data[data['server'] == Player].drop(columns=['server','returner'])
     PlayerRallyServe = PlayerRallyServe[PlayerRallyServe['match_id'].isin(PlayerGames['match_id'].unique())]
     PlayerRallyServe = PlayerRallyServe[~PlayerRallyServe['row'].isin(rows)]
     PlayerRallyServe[['pl1_unforced','pl2_unforced']] = PlayerRallyServe[['pl2_unforced','pl1_unforced']]
     PlayerRallyServe['row'] = PlayerRallyServe['row'].str[:3]
     
-    PlayerRallyReturn = data[data['returner'] == 'Roger Federer'].drop(columns=['server','returner'])
+    PlayerRallyReturn = data[data['returner'] == Player].drop(columns=['server','returner'])
     PlayerRallyReturn = PlayerRallyReturn[PlayerRallyReturn['match_id'].isin(PlayerGames['match_id'].unique())]
     PlayerRallyReturn = PlayerRallyReturn[~PlayerRallyReturn['row'].isin(rows)]
     PlayerRallyReturn[['pl1_unforced','pl2_unforced']] = PlayerRallyReturn[['pl2_unforced','pl1_unforced']]
@@ -73,6 +73,7 @@ def BuildRally(data,PlayerGames):
 
 def statsDiv(data):
     stats_dic = {}
+    stats_dic['Totality'] = data
     for r in data['row'].unique():
 
         Type = data[data['row'] == r]
@@ -89,16 +90,23 @@ def AllStats(data,Player):
     KeyPServe = pd.read_csv('BaseData/charting-m-stats-KeyPointsServe.csv')
     KeyPReturn = pd.read_csv('BaseData/charting-m-stats-KeyPointsReturn.csv')
 
+    DirOutcome = DirOutcome[DirOutcome['match_id'].isin(data['match_id'].unique())]
     DirOutcome = DirOutcome[DirOutcome['player'] == Player]
 
+    Overview = Overview[Overview['match_id'].isin(data['match_id'].unique())]
     Overview = Overview[Overview['player'] == Player]
     Overview.rename(columns={'set':'row'}, inplace=True)
     
+    NetPoints = NetPoints[NetPoints['match_id'].isin(data['match_id'].unique())]
     NetPoints = NetPoints[NetPoints['player'] == Player]
+
+    KeyPServe = KeyPServe[KeyPServe['match_id'].isin(data['match_id'].unique())]
     KeyPServe = KeyPServe[KeyPServe['player'] == Player ]
+
+    KeyPReturn = KeyPReturn[KeyPReturn['match_id'].isin(data['match_id'].unique())]
     KeyPReturn = KeyPReturn[KeyPReturn['player'] == Player ]
 
-    ServingRally, ReceivingRally = BuildRally(RallySize,data)
+    ServingRally, ReceivingRally = BuildRally(RallySize,data,Player)
 
     S_Rally_dic = statsDiv(ServingRally)
     R_Rally_dic = statsDiv(ReceivingRally)
@@ -108,4 +116,155 @@ def AllStats(data,Player):
     KPS_dic = statsDiv(KeyPServe)
     KPR_dic = statsDiv(KeyPReturn)
 
-    return S_Rally_dic,R_Rally_dic,Shots_dic,Over_dic,Net_dic,KPS_dic,KPR_dic
+    return [S_Rally_dic,R_Rally_dic,Shots_dic,Over_dic,Net_dic,KPS_dic,KPR_dic]
+
+def SRally(data, Matches, surface = None):
+
+    Stats = {}
+
+    for c in data.keys():
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+
+        aggregate = Data.sum()
+
+        WinPer100 = aggregate['pl2_winners']/aggregate['pl1_won']
+        ForcedPer100 = aggregate['pl1_forced']/aggregate['pl1_won']
+        unForcedPer100 = aggregate['pl1_unforced']/aggregate['pl1_won']
+        
+        Stats[c] = {'Winners' : WinPer100, 'Forced' : ForcedPer100, 'Unforced' : unForcedPer100}
+        
+    return Stats
+
+def RRally(data, Matches, surface = None):
+
+    Stats = {}
+
+    for c in data.keys():
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+
+        aggregate = Data.sum()
+
+        WinPer100 = aggregate['pl2_winners']/aggregate['pl2_won']
+        ForcedPer100 = aggregate['pl2_forced']/aggregate['pl2_won']
+        unForcedPer100 = aggregate['pl2_unforced']/aggregate['pl2_won']
+        
+        Stats[c] = {'Winners' : WinPer100, 'Forced' : ForcedPer100, 'Unforced' : unForcedPer100}
+        
+    return Stats
+
+def NetStat(data, Matches, surface = None):
+    Stats = {}
+
+    for c in data.keys():
+        dic = {}
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+
+        aggregate = Data.sum()
+
+        dic['Total Pts'] = aggregate['net_pts']
+        dic['Pts_Won'] = aggregate['pts_won']/aggregate['net_pts']
+        dic['Winner'] = aggregate['net_winner']/aggregate['pts_won']
+        dic['Forced'] = (aggregate['induced_forced'] + aggregate['passing_shot_induced_forced'])/aggregate['pts_won']
+        dic['AvgRallyLen'] = aggregate['total_shots'] / aggregate['net_pts']
+
+        Stats[c] = dic
+    
+    return Stats
+
+def KPServeStat(data, Matches, surface = None):
+    Stats = {}
+
+    for c in data.keys():
+        dic = {}
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+
+        aggregate = Data.sum()
+        
+        dic['Total Points'] = aggregate['pts']
+        dic['Points Won'] = aggregate['pts_won']/ aggregate['pts']
+        dic['Winners'] = aggregate['rally_winners']/ aggregate['pts']
+        dic['Forced'] = aggregate['rally_forced']/ aggregate['pts']
+        dic['Unforced'] = aggregate['unforced']/ aggregate['pts']
+        dic['Aces'] = aggregate['aces']/ aggregate['pts']
+        dic['FirstServe'] = aggregate['first_in']/ aggregate['pts']
+
+        Stats[c] = dic
+    
+    return Stats
+
+def KPReturnStat(data, Matches, surface = None):
+    Stats = {}
+
+    for c in data.keys():
+        dic = {}
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+
+        aggregate = Data.sum()
+        
+        dic['Total Points'] = aggregate['pts']
+        dic['Points Won'] = aggregate['pts_won']/ aggregate['pts']
+        dic['Winners'] = aggregate['rally_winners']/ aggregate['pts']
+        dic['Forced'] = aggregate['rally_forced']/ aggregate['pts']
+        dic['Unforced'] = aggregate['unforced']/ aggregate['pts']
+
+        Stats[c] = dic
+    
+    return Stats
+
+def ShotsStat(data, Matches, surface = None):
+
+    Stats = {}
+
+    for c in data.keys():
+        dic = {}
+        Data = data[c]
+
+        if surface != None:
+            Matches = Matches[Matches['Surface'] == surface]
+            Data = Data[Data['match_id'].isin(Matches['match_id'].unique())]
+        
+        aggregate = Data.sum()
+        
+        dic['Total_Shots'] = aggregate['shots']
+        dic['Finished'] = aggregate['pt_ending'] / aggregate['shots']
+        dic['WinPer100'] = aggregate['winners'] / aggregate['shots']
+        dic['InducedError'] = aggregate['induced_forced'] / aggregate['shots']
+        dic['Unforced'] = aggregate['unforced'] / aggregate['shots']
+        dic['Shots_in_PtWon'] = aggregate['shots_in_pts_won'] / aggregate['shots']
+        dic['Shots_in_Ptlost'] = aggregate['shots_in_pts_lost'] / aggregate['shots']
+
+        Stats[c] = dic
+    
+    return Stats
+
+def AggregateStats(data,Matches,surface = None):
+    
+    RallyServeStats = SRally(data[0],Matches,surface=surface)
+    RallyReceptionStats = RRally(data[1],Matches,surface=surface)
+
+    ShotsStats = ShotsStat(data[2],Matches,surface=surface)
+    NetStats = NetStat(data[4],Matches,surface=surface)
+    KPServeStats = KPServeStat(data[5],Matches,surface=surface)
+    KPReturnStats = KPReturnStat(data[6],Matches,surface=surface)
+
+    return RallyServeStats,RallyReceptionStats,ShotsStats,NetStats,KPServeStats,KPReturnStats
