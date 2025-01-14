@@ -1,5 +1,5 @@
 from prefixspan import PrefixSpan
-from utils.Points import RallyExtraction,RallyParsing
+from utils.Tools import RallyExtraction,RallyParsing
 from pymining import itemmining, seqmining
 from collections import Counter
 import re
@@ -9,6 +9,9 @@ StrokesDictionary = {
     '4' : 'Wide Serve',
     '5' : 'Body Serve',
     '6' : 'Down The T Serve',
+    '7' : 'shallow',
+    '8' : 'middle',
+    '9' : 'deep',
     'f' : 'Forehand',
     'b' : 'Backhand',
     'r' : 'FH Slice',
@@ -19,8 +22,8 @@ StrokesDictionary = {
     '2' : ' Meio',
     '3' : ' Paralelo',
     '*' : 'Winner',
-    '@' : 'Forced Error',
-    '#' : 'Unforced Error',
+    '@' : 'Unforced Error',
+    '#' : 'Forced Error',
     'o' :'standard overhead/smash',
     'p' :'backhand overhead/smash',
     'u' :'forehand drop shot',
@@ -38,7 +41,8 @@ StrokesDictionary = {
     'g' : 'foot faults',
     't' : 'trick shot',
     'q' : 'unknown',
-    'e' : 'any'
+    'e' : 'any',
+    '+' : 'net'
 }
 
 def GetStrokes():
@@ -66,7 +70,7 @@ def SequencerServe(Points):
     Sequences = []
     Endings = []
     for seq, end in data:
-        Sequences.append(seq[-4:])
+        Sequences.append(seq[-3:])
         Endings.append(end)
     
     return Sequences, Endings
@@ -112,18 +116,7 @@ def Seqmining(Sequences, k ):
     return sorted_values[:10]
 
 def find_contiguous_patterns(sequences, min_support, k=5, max_length=None):
-    """
-    Find contiguous patterns in sequences.
     
-    Args:
-        sequences (list of list): List of sequences.
-        min_support (int): Minimum support for patterns.
-        k (int): Minimum length of patterns.
-        max_length (int): Maximum length of patterns (optional).
-    
-    Returns:
-        list of tuple: Frequent contiguous patterns with their counts.
-    """
     if max_length is None:
         max_length = float('inf')  # No maximum length constraint
     

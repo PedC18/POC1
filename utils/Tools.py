@@ -68,6 +68,7 @@ def Server(points,player,games):
     
     return result['Svr']
 
+
 def Shots(data,rows):
     result = pd.DataFrame(columns=rows)
     result['match_id'] = data['match_id'].unique()
@@ -170,7 +171,21 @@ def GetGamesResults(Points):
     return NewPoints
 
 def Translate(s):
-    chars_to_remove = "789+-^;=c!CRS "  # Specify characters to remove
+    chars_to_remove = "789+-^;=c!CRSQ "  # Specify characters to remove
+    translation_table = str.maketrans('', '', chars_to_remove)
+    updated_text = s.translate(translation_table)
+
+    return updated_text
+
+def ServeTranslate(s):
+    chars_to_remove = "+-^;=c!CRS "  # Specify characters to remove
+    translation_table = str.maketrans('', '', chars_to_remove)
+    updated_text = s.translate(translation_table)
+
+    return updated_text
+
+def NetTranslate(s):
+    chars_to_remove = "879-^;=c!CRS "  # Specify characters to remove
     translation_table = str.maketrans('', '', chars_to_remove)
     updated_text = s.translate(translation_table)
 
@@ -187,11 +202,43 @@ def check_list_contained(A, B):
     # return True if any instances were found, False otherwise
     return len(instances) > 0
 
+def split_string(s):
+    # Find matches from a letter to the next letter
+    return re.findall(r'[a-zA-Z][^a-zA-Z]*', s)
 
+def RallyParsing(s,dic):
+    Sequence = []
+    End = []
+    text = Translate(s=s)
+    serve = text[0]
+    rally = text[1:len(text)-1]
+    end = text[-1]
 
+    Sequence.append(dic[serve])
+
+    if rally != '':
+        rallyShots = rally[::2]
+        rallyDir = rally[1::2]
+        for i in range(len(rallyShots)):
+            if(i == len(rallyDir)):
+                End.append(dic[rallyShots[i]] +'_'+str(((i+1)%2) + 1))
+            else:
+                Sequence.append(dic[rallyShots[i]] + dic[rallyDir[i]] +'_'+ str(((i+1)%2) + 1))
+
+    End.append(dic[end])
+    return Sequence, End
+
+def RallyExtraction(Points):
+    Rallys = []
+    for _,row in Points.iterrows():
+            
+        if(row['2nd'] == 'False'):
+            Rallys.append(row['1st'])
+        else:
+            Rallys.append(row['2nd'])
     
+    return Rallys
 
-        
 # def ResumePointsStats(data, columns):
 #     total = len(data)
 #     result = []

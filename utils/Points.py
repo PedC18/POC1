@@ -1,5 +1,6 @@
 import pandas as pd
-from utils.Tools import Translate
+from utils.Tools import Translate,ServeTranslate,RallyParsing,RallyExtraction
+from utils.SeqMining import Sequencer,GetStrokes
    
 def DivisionSets(Points,ids):
     SetPerMatches = {}
@@ -50,37 +51,147 @@ def DivisionGames(Points,ids):
     
     return GamesPerMatches
 
-def RallyParsing(s,dic):
-    Sequence = []
-    End = []
-    text = Translate(s=s)
-    serve = text[0]
-    rally = text[1:len(text)-1]
-    end = text[-1]
 
-    Sequence.append(dic[serve])
+def SnVPoints(data, result = None, surface = None):
 
-    if rally != '':
-        rallyShots = rally[::2]
-        rallyDir = rally[1::2]
-        for i in range(len(rallyShots)):
-            if(i == len(rallyDir)):
-                End.append(dic[rallyShots[i]])
-            else:
-                Sequence.append(dic[rallyShots[i]] + dic[rallyDir[i]])
-
-    End.append(dic[end])
-    return Sequence, End
-
-def RallyExtraction(Points):
-    Rallys = []
-    for _,row in Points.iterrows():
-            
-        if(row['2nd'] == 'False'):
-            Rallys.append(row['1st'])
-        else:
-            Rallys.append(row['2nd'])
+    StrokesDictionary = GetStrokes()
     
-    return Rallys
+    data = data[data['Server'] == True]
+    
+    if result != None:
+        data = data[data['Victor'] == result]
 
+    if surface != None:
+        data = data[data['Surface'] == surface]
+
+    Rally = RallyExtraction(data)
+    
+    SnV = []
+    for n in Rally:
+        if n[1] == '+':
+            SnV.append(n)
+
+    RallyS = [RallyParsing(d,StrokesDictionary) for d in SnV]
+
+    Sequences = []
+    Endings = []
+    for seq, end in RallyS:
+        Sequences.append(seq)
+        Endings.append(end)
+
+    dicS = {}
+    for e in Endings:
+        if(e[-1] in dicS):
+            dicS[e[-1]] += 1
+        else:
+            dicS[e[-1]] = 1
+    
+    return dicS
+
+def FindRallyLenght(Points,result= None, surface = None):
+
+    if result != None:
+        Points = Points[Points['Victor'] == result]
+
+    if surface != None:
+        Points = Points[Points['Surface'] == surface]
+    
+    First = Points[(Points['2nd'] == 'False')]
+    Second = Points[~(Points['2nd'] == 'False')]
+
+    Sequences,_ = Sequencer(First)
+
+    First['1st'] = Sequences
+
+    Sequences,_ = Sequencer(Second)
+
+    Second['2nd'] = Sequences
+
+    print(First['1st'].apply(lambda x : len(x)).mean())
+    print(Second['2nd'].apply(lambda x : len(x)).mean())
+
+def FindNetPoints(data,server=None, result = None, surface = None):
+    
+    StrokesDictionary = GetStrokes()
+
+    if server != None:
+        data = data[data['Server'] == server]
+
+    if result != None:
+        data = data[data['Victor'] == result]
+
+    if surface != None:
+        data = data[data['Surface'] == surface]
+
+    Rally = RallyExtraction(data)
+    
+    Net = []
+    for r in Rally:
+        if r.find('+') != -1:
+            Net.append(r)
+
+    RallyS = [RallyParsing(d,StrokesDictionary) for d in Net]
+
+    Sequences = []
+    Endings = []
+    for seq, end in RallyS:
+        Sequences.append(seq)
+        Endings.append(end)
+
+    dic = {}
+    for e in Endings:
+        if(e[-1] in dic):
+            dic[e[-1]] += 1
+        else:
+            dic[e[-1]] = 1
+    
+    return dic
+
+def Service(Points):
+
+    Points = Points[Points['Server'] == True]
+    
+    FirstServe = Points[(Points['2nd'] == 'False')] 
+    SecondServe = Points[~(Points['2nd'] == 'False')] 
+
+    return FirstServe,SecondServe
+
+def ServeData(data, result = None):
+    Serve = []
+    Wide = {'Total' : 0}
+    Middle = {'Total' : 0}
+    DownTheT = {'Total' : 0}
+
+    data = data[data['Server'] == True]
+    
+    if result != None:
+        data = data[data['Victor'] == result]
+
+    Rallys = RallyExtraction(data)
+
+    for r in Rallys:
+        r = ServeTranslate(r)
+        Serve.append((r[0],r[-1]))
+    
+    for s in Serve:
+        if s[0] == '4':
+            if(s[1] in Wide):
+                Wide[s[1]] +=1
+                Wide['Total'] += 1
+            else:
+                Wide[s[1]] = 1
+        elif s[0] == '5':
+            if(s[1] in Middle):
+                Middle[s[1]] +=1
+                Middle['Total'] += 1
+            else:
+                Middle[s[1]] = 1
+        else:
+            if(s[1] in DownTheT):
+                DownTheT[s[1]] +=1
+                DownTheT['Total'] += 1
+            else:
+                DownTheT[s[1]] = 1
+
+    return Wide,Middle,DownTheT
 

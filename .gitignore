@@ -44,6 +44,10 @@ Temporary Items
 
 #Extensions
 *.csv
+*.ipynb
 *_data/*.csv
 *.xlsm
 *.pyc
+
+
+#arquivos
